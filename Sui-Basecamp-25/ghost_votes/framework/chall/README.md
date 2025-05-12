@@ -12,6 +12,13 @@ Now, you're being asked to prove it. Can you uncover the bug and cast votes with
 
 There is one proposal titled "Proposal to decline". Your goal is to reject it by ensuring the `is_open` flag is set to `false`, and the number of `no` votes exceeds the number of `yes` votes.
 
+### Solution + Specs
+
+We included the solution in `solve.move`.
+
+`governance.move` contains a spec that reveals the vulnerability. 
+Comment out the specs to run the solution without sui-prover.
+
 ### Author
 
-https://t.me/mykhailo_17
+https://t.me/mykhailo_1

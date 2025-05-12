@@ -131,3 +131,31 @@ public fun vote<C>(self: &mut Governance<C>, proposal_index: u64, yes: bool, ctx
         };
     };
 }
+
+#[spec_only]
+use prover::ghost;
+use prover::prover::{requires, ensures, asserts};
+
+#[spec(target = sui::tx_context::native_sender)]
+public fun native_sender(): address {
+    let sender = sui::tx_context::native_sender();
+    ensures(sender == @0x42);
+    sender
+}
+
+#[spec(prove, ignore_abort)]
+public fun vote_spec<C>(
+    self: &mut Governance<C>,
+    proposal_index: u64,
+    yes: bool,
+    ctx: &mut TxContext,
+) {
+    requires(self.proposals.length() > proposal_index);
+    let proposal = &self.proposals[proposal_index];
+    
+    vote(self, proposal_index, yes, ctx);
+    ensures(self.proposals.length() > proposal_index);
+
+    let proposal = &self.proposals[proposal_index];
+    ensures(proposal.voted.length() <= self.stakes.length());
+}
