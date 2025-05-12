@@ -1,0 +1,8 @@
+[package]
+name = "challenge"
+edition = "2024.beta"
+
+[dependencies]
+
+[addresses]
+challenge = "0x0"
