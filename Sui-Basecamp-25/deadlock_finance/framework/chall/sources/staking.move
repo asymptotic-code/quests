@@ -354,12 +354,68 @@ public fun unstake_complete<T>(pool: &mut Pool<T>, clock: &Clock, ctx: &mut TxCo
 }
 
 public fun calculate_rewards(amount: u64, apr: u64, apr_base: u64, duration: u64): u64 {
-    if (amount == 0) {
-        return 0
-    };
-
     let rewards = (amount * apr) / apr_base;
     let rewards = rewards * duration / YEAR_IN_SECONDS;
 
     rewards
+}
+
+#[spec_only]
+use prover::prover::{asserts, requires, ensures};
+#[spec_only]
+use std::integer::{Self, Integer};
+
+#[spec_only]
+public fun is_valid_apr_base(apr_base: u64): bool {
+    match (apr_base) {
+            100 => true,
+            1_000 => true,
+            10_000 => true,
+            100_000 => true,
+            1_000_000 => true,
+            10_000_000 => true,
+            100_000_000 => true,
+            1_000_000_000 => true,
+            10_000_000_000 => true,
+            100_000_000_000 => true,
+            1_000_000_000_000 => true,
+            10_000_000_000_000 => true,
+            100_000_000_000_000 => true,
+            1_000_000_000_000_000 => true,
+            10_000_000_000_000_000 => true,
+            100_000_000_000_000_000 => true,
+            1_000_000_000_000_000_000 => true,
+            _ => false,
+        }
+}
+
+#[spec(prove)]
+public fun calculate_rewards_spec(amount: u64, apr: u64, apr_base: u64, duration: u64): u64 {
+    requires(amount == 20 && amount <= 10000);  // from challenge constants
+    requires(duration > 0 && duration <= MAX_DURATION);
+
+    requires(is_valid_apr_base(apr_base));
+    let apr_percentage: Integer = integer::div(
+        integer::mul(apr.to_int(), 100u64.to_int()),
+        apr_base.to_int(),
+    );
+    requires(
+        integer::gte(apr_percentage, MIN_APR_PERCENTAGE.to_int())
+        && integer::lte(apr_percentage, MAX_APR_PERCENTAGE.to_int()),
+    );
+
+    let result = calculate_rewards(amount, apr, apr_base, duration);
+
+    ensures(
+        result.to_int() ==
+            integer::div(
+                integer::mul(
+                    integer::div(integer::mul(amount.to_int(), apr.to_int()), apr_base.to_int()),
+                    duration.to_int(),
+                ),
+                YEAR_IN_SECONDS.to_int(),
+            ),
+    );
+
+    result
 }
