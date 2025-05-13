@@ -11,3 +11,4 @@ build/
 *.pdb
 
 .DS_Store
+*.log.*
